@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>韓國購物清單</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f3eee5;
+    --bg-2: #ebe3d3;
+    --paper: #fbf7ef;
+    --ink: #2a1f15;
+    --ink-soft: #6b5c4a;
+    --ink-faint: #a89880;
+    --line: #d9cdb6;
+    --line-soft: #e6dcc6;
+    --accent: #b54b2e;
+    --accent-soft: #e9d6c8;
+    --check: #4a7a3a;
+    --shadow: 0 1px 0 rgba(60,40,20,.06), 0 8px 24px -12px rgba(60,40,20,.18);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans TC", "Inter", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(181,75,46,0.05), transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(74,122,58,0.04), transparent 40%);
+  }
+
+  .stage { max-width: 1180px; margin: 0 auto; padding: 56px 40px 120px; }
+  .head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px; margin-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 22px;
+  }
+  .title-block { display: flex; align-items: center; gap: 18px; }
+  .stamp {
+    width: 56px; height: 56px; border-radius: 8px;
+    border: 2.5px solid var(--accent);
+    display: grid; place-items: center;
+    color: var(--accent);
+    font-weight: 700; font-size: 22px; letter-spacing: 2px;
+    transform: rotate(-4deg);
+    background: var(--paper);
+    font-family: "Noto Sans TC", serif;
+  }
+  h1 {
+    font-size: 38px; font-weight: 700; margin: 0; letter-spacing: 1px;
+    line-height: 1.1;
+  }
+  h1 .en {
+    display: block;
+    font-family: "Inter", sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: var(--ink-faint); letter-spacing: 3px;
+    margin-top: 4px; text-transform: uppercase;
+  }
+  .meta {
+    text-align: right;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .meta .big {
+    font-family: "Inter", sans-serif;
+    font-size: 28px; color: var(--ink); font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .loc-stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .loc-stat {
+    appearance: none; border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 14px 14px 12px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--ink);
+    transition: all .15s;
+    position: relative;
+    overflow: hidden;
+    --loc-color: oklch(0.55 0.14 var(--loc-hue, 0));
+    --loc-bg: oklch(0.95 0.04 var(--loc-hue, 0));
+  }
+  .loc-stat::before {
+    content: "";
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--loc-color);
+    opacity: .8;
+  }
+  .loc-stat:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -8px rgba(60,40,20,.18);
+  }
+  .loc-stat.active {
+    background: var(--loc-bg);
+    border-color: var(--loc-color);
+  }
+  .loc-stat.empty { opacity: .5; }
+  .loc-stat-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .loc-stat-short {
+    width: 26px; height: 26px; border-radius: 6px;
+    background: var(--loc-color); color: white;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700;
+    font-family: "Noto Sans TC", "Inter", sans-serif;
+    letter-spacing: 0;
+  }
+  .loc-stat-count {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px; color: var(--ink);
+  }
+  .loc-stat-count b { font-weight: 600; font-size: 16px; }
+  .loc-stat-count .slash { color: var(--ink-faint); font-weight: 400; }
+  .loc-stat-label {
+    font-size: 13px; font-weight: 500;
+    color: var(--ink); letter-spacing: 0.2px;
+    margin-bottom: 8px;
+  }
+  .loc-stat-bar {
+    height: 3px; background: var(--line-soft);
+    border-radius: 2px; overflow: hidden;
+  }
+  .loc-stat-fill {
+    height: 100%;
+    background: var(--loc-color);
+    transition: width .3s ease;
+  }
+  @media (max-width: 900px) {
+    .loc-stats { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 540px) {
+    .loc-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .active-loc-tag {
+    appearance: none; border: 1px solid var(--loc-color);
+    background: var(--loc-bg);
+    color: var(--ink);
+    padding: 6px 12px 6px 10px;
+    border-radius: 999px;
+    font: 500 12px/1 "Noto Sans TC", sans-serif;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+    --loc-color: oklch(0.55 0.14 var(--loc-hue, 0));
+    --loc-bg: oklch(0.95 0.04 var(--loc-hue, 0));
+  }
+  .active-loc-tag .loc-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--loc-color);
+  }
+
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px; gap: 12px; flex-wrap: wrap;
+  }
+  .filters { display: flex; gap: 4px; padding: 4px;
+    background: var(--bg-2); border-radius: 10px;
+  }
+  .filters button {
+    appearance: none; border: 0; background: transparent;
+    padding: 7px 14px; font: inherit; font-size: 13px;
+    color: var(--ink-soft); cursor: pointer; border-radius: 7px;
+    font-weight: 500;
+  }
+  .filters button.on {
+    background: var(--paper); color: var(--ink);
+    box-shadow: 0 1px 0 rgba(60,40,20,.06);
+  }
+  .filters button .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; opacity: .5; margin-left: 6px;
+  }
+  .add-btn {
+    appearance: none; border: 1.5px dashed var(--line);
+    background: transparent; color: var(--ink-soft);
+    padding: 9px 18px; border-radius: 10px;
+    font: 500 13px/1 "Noto Sans TC", sans-serif;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .15s;
+  }
+  .add-btn:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: var(--paper);
+  }
+  .add-btn .plus { font-size: 16px; line-height: 1; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+    position: relative;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(60,40,20,.06), 0 14px 30px -14px rgba(60,40,20,.22); }
+  .card.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 1px 0 rgba(60,40,20,.06), 0 14px 30px -14px rgba(60,40,20,.22);
+  }
+  .card.dragging {
+    opacity: .35;
+    transform: scale(.98);
+    cursor: grabbing;
+  }
+  .card.drop-target {
+    box-shadow: -4px 0 0 0 var(--accent), 0 1px 0 rgba(60,40,20,.06), 0 14px 30px -14px rgba(60,40,20,.22);
+  }
+  @keyframes cardFlash {
+    0%, 100% { box-shadow: 0 0 0 0 transparent, 0 1px 0 rgba(60,40,20,.06), 0 8px 24px -12px rgba(60,40,20,.18); }
+    30% { box-shadow: 0 0 0 6px var(--accent-soft), 0 1px 0 rgba(60,40,20,.06), 0 14px 30px -14px rgba(60,40,20,.22); }
+  }
+  .card.flash { animation: cardFlash .7s ease-out; }
+  .card.bought { opacity: .58; }
+  .card.bought .text-area textarea { text-decoration: line-through; text-decoration-color: var(--ink-faint); }
+
+  .card .num-badge {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; color: var(--paper);
+    background: rgba(42,31,21,.72);
+    padding: 3px 7px; border-radius: 4px;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+  }
+  .drag-handle {
+    position: absolute; top: 50%; left: -2px; transform: translateY(-50%);
+    z-index: 3;
+    width: 18px; height: 36px;
+    display: grid; place-items: center;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-left: 0;
+    border-radius: 0 6px 6px 0;
+    color: var(--ink-faint);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .card:hover .drag-handle { opacity: 1; }
+  .drag-handle:hover { color: var(--accent); border-color: var(--accent); }
+  .drag-handle:active { cursor: grabbing; }
+  .drag-handle svg { fill: currentColor; }
+  .card[draggable="true"] { cursor: default; }
+  .card[draggable="true"] .num-badge { cursor: grab; }
+  .card[draggable="true"] .num-badge:active { cursor: grabbing; }
+
+  .img-area {
+    aspect-ratio: 1 / 1;
+    background: var(--bg-2);
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .img-area .placeholder {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--ink-faint);
+    background-image:
+      repeating-linear-gradient(45deg, transparent 0 12px, rgba(168,152,128,.07) 12px 13px);
+    transition: background .15s;
+  }
+  .img-area:hover .placeholder { background-color: rgba(255,255,255,.3); }
+  .img-area .placeholder .icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px dashed var(--ink-faint);
+    display: grid; place-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--ink-faint);
+    transition: all .2s;
+  }
+  .img-area .placeholder .icon.active {
+    border-color: var(--accent); border-style: solid;
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+    animation: iconPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes iconPulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-soft); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+  }
+  .img-area .placeholder .hint {
+    font-family: "Noto Sans TC", sans-serif;
+    font-size: 11px; letter-spacing: 0; text-align: center;
+    line-height: 1.5;
+  }
+  .img-area .placeholder .hint b {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .img-area .placeholder .hint .sub {
+    color: var(--ink-faint);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+  .img-area img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .img-area.dragover .placeholder { background-color: rgba(181,75,46,.08); color: var(--accent); }
+  .img-area.dragover .placeholder .icon { border-color: var(--accent); }
+
+  .img-actions {
+    position: absolute; top: 8px; right: 8px;
+    display: flex; gap: 4px; opacity: 0; transition: opacity .15s;
+    z-index: 2;
+  }
+  .card:hover .img-actions { opacity: 1; }
+  .img-actions button {
+    appearance: none; border: 0;
+    background: rgba(42,31,21,.78);
+    color: var(--paper);
+    width: 26px; height: 26px; border-radius: 6px;
+    cursor: pointer; font-size: 12px;
+    display: grid; place-items: center;
+    backdrop-filter: blur(4px);
+  }
+  .img-actions button:hover { background: var(--accent); }
+
+  .text-area {
+    padding: 12px 14px 14px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .text-area .row1 {
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .check {
+    flex-shrink: 0;
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 1.5px solid var(--line);
+    background: var(--bg);
+    cursor: pointer;
+    display: grid; place-items: center;
+    margin-top: 1px;
+    transition: all .15s;
+  }
+  .check:hover { border-color: var(--check); }
+  .check.on {
+    background: var(--check); border-color: var(--check); color: white;
+  }
+  .check.on::after {
+    content: "✓"; font-size: 13px; font-weight: 700;
+    line-height: 1;
+  }
+
+  .text-area textarea {
+    flex: 1;
+    appearance: none; border: 0; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--ink);
+    resize: none; padding: 0;
+    line-height: 1.45;
+    font-weight: 500;
+    outline: none;
+    overflow: hidden;
+  }
+  .text-area textarea::placeholder { color: var(--ink-faint); font-weight: 400; }
+
+  .meta-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-left: 30px;
+  }
+
+  .locpicker { position: relative; display: inline-block; }
+  .loc-chip {
+    appearance: none; border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-soft);
+    padding: 5px 8px 5px 9px;
+    border-radius: 999px;
+    font: 500 11px/1 "Noto Sans TC", sans-serif;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s;
+    --loc-color: oklch(0.55 0.14 var(--loc-hue, 0));
+    --loc-bg: oklch(0.95 0.04 var(--loc-hue, 0));
+  }
+  .loc-chip:hover { border-color: var(--ink-faint); }
+  .loc-chip.has {
+    background: var(--loc-bg);
+    border-color: var(--loc-color);
+    color: var(--ink);
+  }
+  .loc-chip .loc-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--loc-color);
+    flex-shrink: 0;
+  }
+  .loc-chip .loc-dot.empty {
+    background: transparent; border: 1.2px dashed var(--ink-faint);
+  }
+  .loc-chip .caret {
+    font-size: 9px; opacity: .5; margin-left: 1px;
+  }
+  .loc-menu {
+    position: absolute; top: calc(100% + 4px); left: 0;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px -10px rgba(60,40,20,.3);
+    padding: 4px;
+    z-index: 50;
+    min-width: 150px;
+  }
+  .loc-opt {
+    appearance: none; border: 0;
+    width: 100%; text-align: left;
+    background: transparent;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font: 500 12px/1 "Noto Sans TC", sans-serif;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    --loc-color: oklch(0.55 0.14 var(--loc-hue, 0));
+  }
+  .loc-opt:hover { background: var(--bg-2); }
+  .loc-opt.on { background: var(--bg-2); font-weight: 600; }
+  .loc-opt .loc-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--loc-color);
+    flex-shrink: 0;
+  }
+  .loc-opt .loc-dot.empty {
+    background: transparent;
+    border: 1.2px dashed var(--ink-faint);
+  }
+  .loc-opt.clear {
+    color: var(--ink-faint);
+    border-top: 1px solid var(--line-soft);
+    margin-top: 2px; padding-top: 8px;
+    border-radius: 0 0 7px 7px;
+  }
+
+  .add-card {
+    border: 1.5px dashed var(--line);
+    background: transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: grid; place-items: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    min-height: 360px;
+    transition: all .15s;
+    font-family: "Noto Sans TC", sans-serif;
+  }
+  .add-card:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(251,247,239,.5);
+  }
+  .add-card .big {
+    font-size: 28px; margin-bottom: 8px; font-weight: 300;
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: grid; place-items: center;
+    margin: 0 auto 10px;
+    line-height: 1;
+  }
+
+  .reorder-hint {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .reorder-hint .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-faint);
+    flex-shrink: 0;
+  }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center; padding: 80px 20px;
+    color: var(--ink-faint);
+  }
+  .empty h3 { color: var(--ink-soft); margin: 12px 0 6px; font-weight: 500; }
+  .empty p { margin: 0; font-size: 13px; }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--ink-faint);
+    letter-spacing: 1px;
+  }
+
+  body[data-density="compact"] .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  body[data-density="compact"] .text-area textarea { font-size: 13px; }
+  body[data-density="compact"] .add-card { min-height: 280px; }
+
+  body[data-theme="indigo"] {
+    --bg: #ecedf3; --bg-2: #dde0eb; --paper: #f7f7fb;
+    --ink: #1a1d33; --ink-soft: #4d5474; --ink-faint: #9098b3;
+    --line: #c9cee0; --line-soft: #dde1ec;
+    --accent: #3a4ec7; --accent-soft: #d6dcf2;
+    --check: #2f7a64;
+  }
+  body[data-theme="matcha"] {
+    --bg: #eef0e5; --bg-2: #e0e3d2; --paper: #f9faf2;
+    --ink: #1f2517; --ink-soft: #586049; --ink-faint: #9aa284;
+    --line: #cdd2bb; --line-soft: #dee2cf;
+    --accent: #5e7a35; --accent-soft: #dee5cb;
+    --check: #5e7a35;
+  }
+
+  /* Tweaks panel */
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-tog-btn{position:fixed;right:16px;bottom:16px;z-index:2147483645;
+    appearance:none;border:1px solid var(--line);background:var(--paper);
+    color:var(--ink-soft);padding:8px 14px;border-radius:10px;
+    font:500 12px/1 "Noto Sans TC",sans-serif;cursor:pointer;
+    display:flex;align-items:center;gap:6px;
+    box-shadow:0 4px 12px -4px rgba(60,40,20,.2);
+    transition:all .15s;}
+  .twk-tog-btn:hover{color:var(--accent);border-color:var(--accent);}
+</style>
+</head>
+<body data-theme="kraft" data-density="cozy">
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+const STORAGE_KEY = "kr-shopping-list-v2";
+
+const LOCATIONS = [
+  { id: "olive",    label: "Olive Young", short: "OY",  hue: 8 },
+  { id: "pharmacy", label: "藥局",        short: "藥",  hue: 150 },
+  { id: "daiso",    label: "大創 Daiso",  short: "大",  hue: 220 },
+  { id: "market",   label: "超市",        short: "超",  hue: 40 },
+  { id: "cvs",      label: "便利商店",    short: "C",   hue: 180 },
+  { id: "busan",    label: "釜山伴手禮",  short: "釜",  hue: 280 },
+];
+const LOC_BY_ID = Object.fromEntries(LOCATIONS.map((l) => [l.id, l]));
+
+const SEED = [
+  { id: "i1", text: "辣炒年糕醬包",       loc: "market",   img: "", bought: false },
+  { id: "i2", text: "蜂蜜奶油杏仁",       loc: "market",   img: "", bought: false },
+  { id: "i3", text: "Innisfree 綠茶面膜", loc: "olive",    img: "", bought: true  },
+  { id: "i4", text: "海苔（兩道）",       loc: "market",   img: "", bought: false },
+  { id: "i5", text: "韓式燒酒杯",         loc: "daiso",    img: "", bought: false },
+  { id: "i6", text: "感冒糖漿",           loc: "pharmacy", img: "", bought: false },
+  { id: "i7", text: "氷魚乾下酒菜",       loc: "busan",    img: "", bought: false },
+  { id: "i8", text: "三角飯糰宵夜",       loc: "cvs",      img: "", bought: true  },
+];
+
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+function loadItems() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return SEED;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    return SEED;
+  } catch (e) { return SEED; }
+}
+function saveItems(items) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {}
+}
+
+function AutoTextarea({ value, onChange, placeholder, className }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [value]);
+  return (
+    <textarea ref={ref} value={value} onChange={onChange}
+      placeholder={placeholder} className={className} rows={1} />
+  );
+}
+
+function LocPicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+  const loc = value ? LOC_BY_ID[value] : null;
+  return (
+    <div className="locpicker" ref={ref}>
+      <button type="button"
+        className={"loc-chip" + (loc ? " has" : "")}
+        onClick={() => setOpen((o) => !o)}
+        style={loc ? { "--loc-hue": loc.hue } : undefined}>
+        {loc ? (<><span className="loc-dot"></span><span>{loc.label}</span></>) :
+               (<><span className="loc-dot empty"></span><span>選擇地點</span></>)}
+        <span className="caret">▾</span>
+      </button>
+      {open && (
+        <div className="loc-menu">
+          {LOCATIONS.map((l) => (
+            <button key={l.id} type="button"
+              className={"loc-opt" + (value === l.id ? " on" : "")}
+              style={{ "--loc-hue": l.hue }}
+              onClick={() => { onChange(l.id); setOpen(false); }}>
+              <span className="loc-dot"></span><span>{l.label}</span>
+            </button>
+          ))}
+          {value && (
+            <button type="button" className="loc-opt clear"
+              onClick={() => { onChange(""); setOpen(false); }}>
+              <span className="loc-dot empty"></span><span>清除地點</span>
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ItemCard({ item, idx, isActive, isDragging, isDropTarget, onActivate,
+                    onUpdate, onDelete, onDragStart, onDragEnter, onDragEnd, draggable }) {
+  const [imgDragOver, setImgDragOver] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const setImageFromFile = useCallback((file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => onUpdate({ ...item, img: e.target.result });
+    reader.readAsDataURL(file);
+  }, [item, onUpdate]);
+
+  const onDrop = (e) => {
+    if (e.dataTransfer.types.includes("application/x-card-id")) return;
+    e.preventDefault();
+    setImgDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) setImageFromFile(file);
+  };
+
+  const onPickFile = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setImageFromFile(file);
+    e.target.value = "";
+  };
+
+  const onImageAreaClick = () => {
+    onActivate();
+    if (item.img) return;
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <div
+      className={"card"
+        + (item.bought ? " bought" : "")
+        + (isActive ? " active" : "")
+        + (isDragging ? " dragging" : "")
+        + (isDropTarget ? " drop-target" : "")}
+      tabIndex={-1}
+      onMouseDown={onActivate}
+      data-card-id={item.id}
+      draggable={draggable}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("application/x-card-id", item.id);
+        e.dataTransfer.setData("text/plain", item.id);
+        onDragStart(item.id);
+      }}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes("application/x-card-id")) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+        }
+      }}
+      onDragEnter={(e) => {
+        if (e.dataTransfer.types.includes("application/x-card-id")) {
+          onDragEnter(item.id);
+        }
+      }}
+      onDragEnd={onDragEnd}
+    >
+      <span className="num-badge">№ {String(idx + 1).padStart(2, "0")}</span>
+      {draggable && (
+        <span className="drag-handle" title="拖移以重新排序" aria-label="拖移">
+          <svg width="10" height="14" viewBox="0 0 10 14"><circle cx="2" cy="2" r="1.3"/><circle cx="8" cy="2" r="1.3"/><circle cx="2" cy="7" r="1.3"/><circle cx="8" cy="7" r="1.3"/><circle cx="2" cy="12" r="1.3"/><circle cx="8" cy="12" r="1.3"/></svg>
+        </span>
+      )}
+
+      <div
+        className={"img-area" + (imgDragOver ? " dragover" : "")}
+        onClick={onImageAreaClick}
+        onDragOver={(e) => {
+          if (e.dataTransfer.types.includes("application/x-card-id")) return;
+          e.preventDefault(); setImgDragOver(true);
+        }}
+        onDragLeave={() => setImgDragOver(false)}
+        onDrop={onDrop}
+      >
+        {item.img ? (
+          <img src={item.img} alt={item.text || "item"} />
+        ) : (
+          <div className="placeholder">
+            {isActive ? (
+              <>
+                <div className="icon active">⌘V</div>
+                <div className="hint pulse"><b>已選此卡片</b><div className="sub">按 Ctrl/⌘ + V 貼上圖片</div></div>
+              </>
+            ) : (
+              <>
+                <div className="icon">＋</div>
+                <div className="hint"><div className="sub">點擊選取後貼上圖片</div></div>
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="img-actions">
+          {item.img && (
+            <button onClick={(e) => { e.stopPropagation(); onUpdate({ ...item, img: "" }); }} title="移除圖片">↺</button>
+          )}
+          <button onClick={(e) => { e.stopPropagation(); onDelete(item.id); }} title="刪除">✕</button>
+        </div>
+
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={onPickFile} style={{ display: "none" }} />
+      </div>
+
+      <div className="text-area">
+        <div className="row1">
+          <div className={"check" + (item.bought ? " on" : "")}
+            onClick={(e) => { e.stopPropagation(); onUpdate({ ...item, bought: !item.bought }); }}
+            role="checkbox" aria-checked={item.bought}></div>
+          <AutoTextarea value={item.text}
+            onChange={(e) => onUpdate({ ...item, text: e.target.value })}
+            placeholder="商品名稱…" />
+        </div>
+        <div className="meta-row">
+          <LocPicker value={item.loc} onChange={(v) => onUpdate({ ...item, loc: v })} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LocStat({ loc, count, boughtCount, active, onClick }) {
+  const pct = count === 0 ? 0 : Math.round((boughtCount / count) * 100);
+  return (
+    <button
+      className={"loc-stat" + (active ? " active" : "") + (count === 0 ? " empty" : "")}
+      style={{ "--loc-hue": loc.hue }} onClick={onClick}>
+      <div className="loc-stat-top">
+        <span className="loc-stat-short">{loc.short}</span>
+        <span className="loc-stat-count"><b>{boughtCount}</b><span className="slash">/{count}</span></span>
+      </div>
+      <div className="loc-stat-label">{loc.label}</div>
+      <div className="loc-stat-bar"><div className="loc-stat-fill" style={{ width: pct + "%" }}></div></div>
+    </button>
+  );
+}
+
+// ── Tweaks Panel ──────────────────────────────────────────────────────────────
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+  }, [open, clampToViewport]);
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  return (
+    <>
+      {!open && (
+        <button className="twk-tog-btn" onClick={() => setOpen(true)}>
+          ⚙ Tweaks
+        </button>
+      )}
+      {open && (
+        <div ref={dragRef} className="twk-panel"
+             style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+          <div className="twk-hd" onMouseDown={onDragStart}>
+            <b>{title}</b>
+            <button className="twk-x" aria-label="Close tweaks"
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={() => setOpen(false)}>✕</button>
+          </div>
+          <div className="twk-body">
+            {children}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function TweakSection({ title, children }) {
+  return (
+    <>
+      <div className="twk-sect">{title}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <div className="twk-row">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TweakButton({ label, onClick }) {
+  return (
+    <button type="button" className="twk-btn" onClick={onClick}>{label}</button>
+  );
+}
+
+// ── App ────────────────────────────────────────────────────────────────────────
+function App() {
+  const [items, setItems] = useState(loadItems);
+  const [filter, setFilter] = useState("all");
+  const [locFilter, setLocFilter] = useState("");
+  const [activeId, setActiveId] = useState(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const [dropTargetId, setDropTargetId] = useState(null);
+  const [tweaks, setTweak] = useTweaks({ theme: "kraft", density: "cozy" });
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const activeIdRef = useRef(activeId);
+  activeIdRef.current = activeId;
+
+  useEffect(() => { saveItems(items); }, [items]);
+  useEffect(() => {
+    document.body.dataset.theme = tweaks.theme;
+    document.body.dataset.density = tweaks.density;
+  }, [tweaks.theme, tweaks.density]);
+
+  // Document-level paste handler
+  useEffect(() => {
+    const onPaste = (e) => {
+      const clipItems = e.clipboardData?.items;
+      if (!clipItems) return;
+      let imageFile = null;
+      for (const it of clipItems) {
+        if (it.type.startsWith("image/")) {
+          imageFile = it.getAsFile();
+          break;
+        }
+      }
+      if (!imageFile) return;
+      let targetId = activeIdRef.current;
+      if (!targetId) {
+        const list = itemsRef.current;
+        const empty = list.find((x) => !x.img);
+        if (empty) targetId = empty.id;
+        else if (list.length > 0) targetId = list[0].id;
+      }
+      if (!targetId) return;
+      e.preventDefault();
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setItems((prev) => prev.map((it) =>
+          it.id === targetId ? { ...it, img: ev.target.result } : it));
+        setActiveId(targetId);
+        const card = document.querySelector(`[data-card-id="${targetId}"]`);
+        if (card) {
+          card.classList.add("flash");
+          setTimeout(() => card.classList.remove("flash"), 700);
+        }
+      };
+      reader.readAsDataURL(imageFile);
+    };
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, []);
+
+  // Click outside clears active
+  useEffect(() => {
+    const onMouseDown = (e) => {
+      if (!e.target.closest(".card") && !e.target.closest(".twk-panel") && !e.target.closest(".twk-tog-btn")) {
+        setActiveId(null);
+      }
+    };
+    document.addEventListener("mousedown", onMouseDown);
+    return () => document.removeEventListener("mousedown", onMouseDown);
+  }, []);
+
+  const updateItem = useCallback((next) => {
+    setItems((prev) => prev.map((it) => it.id === next.id ? next : it));
+  }, []);
+  const deleteItem = useCallback((id) => {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    setActiveId((cur) => cur === id ? null : cur);
+  }, []);
+  const addItem = useCallback(() => {
+    const newItem = { id: uid(), text: "", loc: locFilter || "", img: "", bought: false };
+    setItems((prev) => [...prev, newItem]);
+    setActiveId(newItem.id);
+    setTimeout(() => {
+      const card = document.querySelector(`[data-card-id="${newItem.id}"]`);
+      card?.querySelector("textarea")?.focus();
+    }, 50);
+  }, [locFilter]);
+  const clearBought = useCallback(() => {
+    if (!confirm("確定要刪除所有已買項目？")) return;
+    setItems((prev) => prev.filter((it) => !it.bought));
+  }, []);
+  const resetAll = useCallback(() => {
+    if (!confirm("確定要重設清單為範例內容？目前資料會消失。")) return;
+    setItems(SEED.map((s) => ({ ...s, id: uid() })));
+  }, []);
+
+  const reorder = useCallback((dragId, targetId) => {
+    if (!dragId || !targetId || dragId === targetId) return;
+    setItems((prev) => {
+      const from = prev.findIndex((x) => x.id === dragId);
+      const to = prev.findIndex((x) => x.id === targetId);
+      if (from < 0 || to < 0) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }, []);
+  const onDragStart = useCallback((id) => setDraggingId(id), []);
+  const onDragEnter = useCallback((id) => {
+    setDropTargetId(id);
+    if (draggingId && id !== draggingId) reorder(draggingId, id);
+  }, [draggingId, reorder]);
+  const onDragEnd = useCallback(() => {
+    setDraggingId(null);
+    setDropTargetId(null);
+  }, []);
+
+  const counts = useMemo(() => {
+    const total = items.length;
+    const bought = items.filter((it) => it.bought).length;
+    return { total, bought, todo: total - bought };
+  }, [items]);
+
+  const locStats = useMemo(() => {
+    const stats = {};
+    LOCATIONS.forEach((l) => { stats[l.id] = { count: 0, bought: 0 }; });
+    items.forEach((it) => {
+      if (!it.loc || !stats[it.loc]) return;
+      stats[it.loc].count++;
+      if (it.bought) stats[it.loc].bought++;
+    });
+    return stats;
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    let res = items;
+    if (filter === "todo") res = res.filter((it) => !it.bought);
+    if (filter === "bought") res = res.filter((it) => it.bought);
+    if (locFilter) res = res.filter((it) => it.loc === locFilter);
+    return res;
+  }, [items, filter, locFilter]);
+
+  const canReorder = filter === "all" && !locFilter;
+
+  const today = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  }, []);
+
+  return (
+    <div className="stage">
+      <header className="head">
+        <div className="title-block">
+          <div className="stamp">韓</div>
+          <h1>韓國購物清單<span className="en">Korea · Shopping List</span></h1>
+        </div>
+        <div className="meta">
+          <div className="big">{counts.bought}<span style={{opacity:.4}}> / {counts.total}</span></div>
+          <div>{today} · 共 {LOCATIONS.length} 個購買地點</div>
+        </div>
+      </header>
+
+      <section className="loc-stats">
+        {LOCATIONS.map((l) => (
+          <LocStat key={l.id} loc={l}
+            count={locStats[l.id].count} boughtCount={locStats[l.id].bought}
+            active={locFilter === l.id}
+            onClick={() => setLocFilter(locFilter === l.id ? "" : l.id)} />
+        ))}
+      </section>
+
+      <div className="toolbar">
+        <div className="filters" role="tablist">
+          <button className={filter === "all" ? "on" : ""} onClick={() => setFilter("all")}>全部 <span className="num">{counts.total}</span></button>
+          <button className={filter === "todo" ? "on" : ""} onClick={() => setFilter("todo")}>待買 <span className="num">{counts.todo}</span></button>
+          <button className={filter === "bought" ? "on" : ""} onClick={() => setFilter("bought")}>已買 <span className="num">{counts.bought}</span></button>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {locFilter && (
+            <button className="active-loc-tag" onClick={() => setLocFilter("")} style={{ "--loc-hue": LOC_BY_ID[locFilter].hue }}>
+              <span className="loc-dot"></span>
+              {LOC_BY_ID[locFilter].label}
+              <span style={{ opacity: .5, marginLeft: 4 }}>✕</span>
+            </button>
+          )}
+          <button className="add-btn" onClick={addItem}>
+            <span className="plus">＋</span> 新增項目
+          </button>
+        </div>
+      </div>
+
+      {!canReorder && filtered.length > 1 && (
+        <div className="reorder-hint">
+          <span className="dot"></span>
+          篩選中無法拖移排序 — 切換到「全部」並清除地點篩選即可重新排序
+        </div>
+      )}
+
+      <div className="grid">
+        {filtered.length === 0 ? (
+          <div className="empty">
+            <h3>沒有項目</h3>
+            <p>{locFilter ? "這個地點還沒記錄商品" : "點選「新增項目」開始記錄"}</p>
+          </div>
+        ) : (
+          filtered.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              idx={items.indexOf(item)}
+              isActive={activeId === item.id}
+              isDragging={draggingId === item.id}
+              isDropTarget={dropTargetId === item.id && draggingId !== item.id}
+              onActivate={() => setActiveId(item.id)}
+              onUpdate={updateItem}
+              onDelete={deleteItem}
+              draggable={canReorder}
+              onDragStart={onDragStart}
+              onDragEnter={onDragEnter}
+              onDragEnd={onDragEnd}
+            />
+          ))
+        )}
+        {filtered.length > 0 && filter !== "bought" && (
+          <div className="add-card" onClick={addItem}>
+            <div>
+              <div className="big">＋</div>
+              <div>新增一筆</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <footer className="footer">
+        <div>圖片與清單皆儲存於瀏覽器內 · 不會上傳</div>
+        <div>v3.0 · {today}</div>
+      </footer>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="主題">
+          <TweakRadio label="色系" value={tweaks.theme}
+            options={[
+              { label: "牛皮紙", value: "kraft" },
+              { label: "靛藍", value: "indigo" },
+              { label: "抹茶", value: "matcha" },
+            ]}
+            onChange={(v) => setTweak("theme", v)} />
+        </TweakSection>
+        <TweakSection title="排版">
+          <TweakRadio label="密度" value={tweaks.density}
+            options={[
+              { label: "舒適", value: "cozy" },
+              { label: "緊湊", value: "compact" },
+            ]}
+            onChange={(v) => setTweak("density", v)} />
+        </TweakSection>
+        <TweakSection title="清單">
+          <TweakButton label="清除已買項目" onClick={clearBought} />
+          <TweakButton label="重設為範例" onClick={resetAll} />
+        </TweakSection>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
